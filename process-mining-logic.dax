@@ -1,0 +1,63 @@
+/* PROCESS MINING: STAGE CYCLE TIME CALCULATIONS
+    These measures calculate the duration (in days) between key operational milestones.
+    Logic includes error handling for blank dates and validation for negative values 
+    (where workflows may have occurred out of sequence).
+*/
+
+// STAGE 01: Time from Expression of Interest (EOI) to Assignment
+Stage 01 EOI→Assigned = 
+VAR s = INT('Volunteer Applicant Tracker'[ApplicationCreatedDate])
+VAR e = INT('Volunteer Applicant Tracker'[Dateassigned])
+VAR d = e - s
+RETURN 
+    IF(
+        ISBLANK(s) || ISBLANK(e), 
+        BLANK(), 
+        IF(d < 0, 0, d) // Prevent negative days if admin backdated assignment
+    )
+
+// STAGE 05: Time from First Contact to Paperwork Sent
+Stage 05 First contact→Paperwork sent = 
+VAR s = INT('Volunteer Applicant Tracker'[FirstContact])
+VAR e = INT('Volunteer Applicant Tracker'[PaperworkSent])
+VAR d = e - s
+RETURN 
+    IF(
+        ISBLANK(s) || ISBLANK(e), 
+        BLANK(), 
+        IF(d < 0, 0, d)
+    )
+
+// STAGE 10a: Completion to Coordinator Contact
+// Note: This measure allows negative values to identify cases where 
+// coordinators preemptively contacted volunteers before formal completion.
+Stage 10a Progress Completed → Coordinator Contacted = 
+VAR StartDate = 'Volunteer Applicant Tracker'[ApplicationCreatedDate] + 'Volunteer Applicant Tracker'[DaysToCompletedNum]
+VAR EndDate = 'Volunteer Applicant Tracker'[CoordinatedContactedApplicant]
+RETURN 
+IF(
+    ISBLANK(StartDate) || ISBLANK(EndDate), 
+    BLANK(), 
+    INT(EndDate) - INT(StartDate) 
+)
+
+/*
+    KPI: ROLLING 365 DAY AVERAGE
+    Calculates the average efficiency of the Coordinator Contact stage 
+    over a rolling 12-month window.
+*/
+Avg Completed→CoordinatorContacted (Last 365d) = 
+VAR cutoff = TODAY() - 365
+RETURN
+ROUND(
+    CALCULATE(
+        AVERAGE('Volunteer Applicant Tracker'[Days Completed → CoordinatorContacted]),
+        FILTER(
+            ALL('Volunteer Applicant Tracker'),
+            NOT ISBLANK('Volunteer Applicant Tracker'[Days Completed → CoordinatorContacted])
+                && 'Volunteer Applicant Tracker'[CoordinatedContactedApplicant] >= cutoff
+                && 'Volunteer Applicant Tracker'[CoordinatedContactedApplicant] <= TODAY()
+        )
+    ),
+    2
+)
