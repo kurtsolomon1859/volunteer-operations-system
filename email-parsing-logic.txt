@@ -1,0 +1,59 @@
+/*
+    LOGIC: DYNAMIC EMAIL PARSING (NESTED EXPRESSIONS)
+    
+    Problem: Incoming emails are unstructured text. We need to extract the email address.
+    Constraint: No Premium Regex connectors available.
+    Solution: A nested IF/SPLIT logic that identifies the start of the email string 
+    ('Email address') and dynamically finds the end of the string by checking for 
+    ANY possible next field (Phone, Work Phone, Mobile, etc.).
+*/
+
+// STEP 1: Extract the raw string between 'Email address' and the next identified label
+trim(
+    first(
+        split(
+            split(variables('EmailBody'),'Email address')[1],
+            if(
+                contains(split(variables('EmailBody'),'Email address')[1],' Phone number'),
+                ' Phone number',
+                if(
+                    contains(split(variables('EmailBody'),'Email address')[1],' Work phone'),
+                    ' Work phone',
+                    if(
+                        contains(split(variables('EmailBody'),'Email address')[1],' Home phone'),
+                        ' Home phone',
+                        if(
+                            contains(split(variables('EmailBody'),'Email address')[1],' Mobile phone'),
+                            ' Mobile phone',
+                            if(
+                                contains(split(variables('EmailBody'),'Email address')[1],' Availability'),
+                                ' Availability',
+                                if(
+                                    contains(split(variables('EmailBody'),'Email address')[1],' Emergency contact'),
+                                    ' Emergency contact',
+                                    if(
+                                        contains(split(variables('EmailBody'),'Email address')[1],' How did you hear'),
+                                        ' How did you hear',
+                                        ' Consent'
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+)
+
+// STEP 2: Sanitize the output (Normalization)
+toLower(
+    trim(
+        first(
+            split(
+                outputs('RawEmail'),
+                ' '
+            )
+        )
+    )
+)
