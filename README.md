@@ -1,7 +1,6 @@
 # End-to-End Volunteer Operations System (Power Platform)
 
-![Architecture Diagram](https://github.com/kurtsolomon/volunteer-operations-system/blob/main/architecture-diagram.png)
-*(Note: Upload your 'Landscape' Architecture screenshot to this repo and name it 'architecture-diagram.png' for this image to appear)*
+<img width="962" height="515" alt="Screen Shot 2026-02-17 at 10 50 55 am" src="https://github.com/user-attachments/assets/518fc859-a863-40a2-8811-3fd269a0333f" />
 
 ## Project Overview
 A full-stack operational system designed to manage the intake, vetting, and deployment of volunteers. This solution replaced manual email chains and spreadsheets with an automated architecture, reducing administrative overhead and identifying a 16-day bottleneck in compliance vetting.
