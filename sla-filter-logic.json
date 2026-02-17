@@ -1,0 +1,19 @@
+/*
+    LOGIC: SLA FILTER ARRAY
+    This JSON defines the query used in a Power Automate 'Filter Array' step.
+    It isolates specific Opportunities (Meals on Wheels, Disaster Welfare)
+    that require strict SLA monitoring, while excluding records with missing local links.
+*/
+
+{
+  "type": "Query",
+  "inputs": {
+    "from": "@outputs('Get_items')?['body/value']",
+    "where": "@and(\n    not(equals(item()?['Link_x0020_to_x0020_local_x0020_'], null)),\n    or(\n        equals(item()?['Opportunity_x0020_Name']?['Value'], 'Volunteer Meals on Wheels driver'),\n        equals(item()?['Opportunity_x0020_Name']?['Value'], 'Disaster Welfare and Support Team volunteer')\n    )\n)"
+  },
+  "runAfter": {
+    "Get_items": [
+      "Succeeded"
+    ]
+  }
+}
